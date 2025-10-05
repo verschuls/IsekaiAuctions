@@ -1,18 +1,16 @@
-name: DeluxeAuctions
-main: me.sedattr.deluxeauctions.DeluxeAuctions
+name: IsekaiAuctions
+main: me.verschuls.isekaiauctions.IsekaiAuctions
 
-author: SedatTR
+authors: [Verschuls, SedatTR]
 version: 3.8
 api-version: 1.13
 folia-supported: true
 
 description: The best, cheap, advanced, fully customizable auction plugin; like popular server!
-website: https://discord.gg/nchk86TKMT
 softdepend:
   - Vault
   - CoinsEngine
   - HeadDatabase
-  - RoyaleEconomy
   - PlaceholderAPI
   - PlayerPoints
   - TokenManager
@@ -20,20 +18,9 @@ softdepend:
   - UltraEconomy
   - LiteBans
   - AdvancedBan
-  - EcoItems
-  - eco
-  - libreforge
-  - AuctionMaster
-  - zAuctionHouseV3
-  - DeluxeAuctionsRedis
   - DeluxeAuctionsDisplay
-  - EdPrison
-  - Skript
 loadbefore:
-  - AuctionMaster
-  - zAuctionHouseV3
   - DeluxeAuctionsDisplay
-  - DeluxeAuctionsRedis
   - CMI
 
 commands:

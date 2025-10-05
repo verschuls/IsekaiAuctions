@@ -1,0 +1,86 @@
+plugins {
+    id 'java'
+    id 'com.gradleup.shadow' version '9.0.0-rc2'
+}
+
+group = 'me.verschuls.isekaiauctions'
+version = '3.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://repo.nightexpressdev.com/releases' }
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+    maven { url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
+    maven { url = 'https://repo.codemc.io/repository/maven-snapshots/' }
+    maven { url = 'https://jitpack.io' }
+    maven { url = 'https://repo.techscode.com/repository/techscode-apis/' }
+    maven { url = 'https://repo.auxilor.io/repository/maven-public/' }
+    maven { url = 'https://repo.rosewooddev.io/repository/public/' }
+    maven { url = 'https://ci.frostcast.net/plugin/repository/everything' }
+}
+
+dependencies {
+    // Provided dependencies (not included in final jar)
+    compileOnly 'su.nightexpress.coinsengine:CoinsEngine:2.5.2'
+    compileOnly 'dev.folia:folia-api:1.20.1-R0.1-SNAPSHOT'
+    compileOnly 'me.clip:placeholderapi:2.11.6'
+    compileOnly 'com.arcaniax:HeadDatabase-API:1.3.2'
+    compileOnly 'com.github.MilkBowl:VaultAPI:1.7'
+    compileOnly 'com.github.angeschossen:LandsAPI:7.17.2'
+    compileOnly 'com.gitlab.ruany:LiteBansAPI:0.6.1'
+    compileOnly ('com.github.DevLeoko:AdvancedBan:v2.3.0') {
+        exclude group: 'org.bstats', module: 'bstats-bukkit'
+        exclude group: 'org.bstats', module: 'bstats-bungeecord'
+    }
+    compileOnly 'me.TechsCode:UltraEconomyAPI:1.1.2'
+    compileOnly 'me.confuser.banmanager:BanManagerBukkit:7.9.0'
+    compileOnly 'org.black_ixx:playerpoints:3.3.0'
+
+    // Database
+    implementation 'redis.clients:jedis:6.2.0'
+
+    // IDK
+    implementation 'net.wesjd:anvilgui:1.10.8-SNAPSHOT'
+    implementation 'de.rapha149.signgui:signgui:2.5.4'
+    implementation 'net.objecthunter:exp4j:0.4.8'
+
+    // Utils
+    compileOnly 'org.projectlombok:lombok:1.18.42'
+    annotationProcessor 'org.projectlombok:lombok:1.18.42'
+}
+
+shadowJar {
+    archiveClassifier.set('')
+
+    // Relocations (same as maven shade plugin)
+    relocate 'net.wesjd.anvilgui', 'me.verschuls.isekaiauctions.anvilgui'
+    relocate 'de.rapha149.signgui', 'me.verschuls.isekaiauctions.signgui'
+
+    // Include only necessary files
+    dependencies {
+        include(dependency('net.wesjd:anvilgui'))
+        include(dependency('de.rapha149.signgui:signgui'))
+        include(dependency('net.objecthunter:exp4j'))
+    }
+
+    // Minimize jar (optional - removes unused classes)
+    minimize()
+}
+
+// Make 'build' task depend on 'shadowJar'
+build.dependsOn shadowJar
+
+// Configure jar task to not run (we use shadowJar instead)
+jar {
+    enabled = false
+}
