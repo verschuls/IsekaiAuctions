@@ -22,5 +22,5 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: isekai-auctions.jar
-        path: build/libs/*.jar
+        name: IsekaiAuctions-3.1.jar
+        path: build/libs/IsekaiAuctions-3.1.jar
