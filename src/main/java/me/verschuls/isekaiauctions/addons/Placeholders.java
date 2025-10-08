@@ -15,7 +15,7 @@ public class Placeholders extends PlaceholderExpansion {
 
     @Override
     public @NotNull String getAuthor() {
-        return "SedatTR";
+        return "Verschuls, SedatTR";
     }
 
     @Override

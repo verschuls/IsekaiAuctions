@@ -18,6 +18,8 @@ public interface MultiServerManager {
     boolean isAuctionUpdating(UUID uuid);
     void removeUpdatingAuction(String uuid, String text);
 
+    void shutDown();
+
     default void handleMessage(String text) {
         if (text == null || text.isEmpty())
             return;

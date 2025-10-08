@@ -1,32 +1,34 @@
-package me.verschuls.isekaiauctions.addons.multiserver;
+package me.verschuls.isekaiauctions.addons.multiserver.redis;
 
-//import me.verschuls.deluxeauctionsredis.RedisPlugin;
 import me.verschuls.isekaiauctions.IsekaiAuctions;
+import me.verschuls.isekaiauctions.addons.multiserver.MultiServerManager;
 
 import java.util.UUID;
 
 public class RedisAddon implements MultiServerManager {
+
+    private final RedisManager manager;
+
     public RedisAddon() {
-        //RedisPlugin.getInstance().checkIfRedisLoaded();
+        this.manager = new RedisManager();
     }
 
     private void publish(String text) {
         IsekaiAuctions.getInstance().dataHandler.debug("SENT Redis Message: &f" + text + " &8(%level_color%Multi Server&8)");
-        /*try {
-            RedisPlugin.getInstance().getRedisManager().publish(text);
+        try {
+            manager.publish(text);
         } catch (Exception e) {
-            e.printStackTrace();
-        }*/
+            e.printStackTrace(System.console().writer());
+        }
     }
 
     private boolean publish(UUID uuid, String text) {
         IsekaiAuctions.getInstance().dataHandler.debug("SENT Redis Message: &f" + text + " &8(%level_color%Multi Server&8)");
-        return false;
-        /*try {
-            return RedisPlugin.getInstance().getRedisManager().publish(String.valueOf(uuid), text);
+        try {
+            return manager.publish(String.valueOf(uuid), text);
         } catch (Exception e) {
             return false;
-        }*/
+        }
     }
 
     @Override
@@ -71,20 +73,25 @@ public class RedisAddon implements MultiServerManager {
 
     @Override
     public boolean isAuctionUpdating(UUID uuid) {
-        return false;
-        /*try {
-            return RedisPlugin.getInstance().getRedisManager().isAuctionMessagePublished(String.valueOf(uuid));
+        try {
+            return manager.isAuctionMessagePublished(String.valueOf(uuid));
         } catch (Exception e) {
             return true;
-        }*/
+        }
     }
 
     @Override
     public void removeUpdatingAuction(String uuid, String text) {
         try {
-            //RedisPlugin.getInstance().getRedisManager().removeAuctionMessage(uuid, text);
+            manager.removeAuctionMessage(uuid, text);
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(System.console().writer());
+
         }
+    }
+
+    @Override
+    public void shutDown() {
+        manager.shutdown();
     }
 }

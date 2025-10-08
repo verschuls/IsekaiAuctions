@@ -117,4 +117,9 @@ public class BungeeAddon implements MultiServerManager, PluginMessageListener {
                 this.updatedAuctions.remove(uuid);
         }
     }
+
+    @Override
+    public void shutDown() {
+
+    }
 }

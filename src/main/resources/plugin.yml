@@ -1,12 +1,13 @@
 name: IsekaiAuctions
 main: me.verschuls.isekaiauctions.IsekaiAuctions
-
 authors: [Verschuls, SedatTR]
-version: 3.8
+website: https://verschuls.xyz
+version: "${version}"
 api-version: 1.13
 folia-supported: true
-
-description: The best, cheap, advanced, fully customizable auction plugin; like popular server!
+libraries:
+  - org.mariadb.jdbc:mariadb-java-client:3.5.4
+description: Aimed to improve performance and stability of the original DeluxeAuctions plugin.
 softdepend:
   - Vault
   - CoinsEngine
@@ -23,10 +24,39 @@ loadbefore:
   - DeluxeAuctionsDisplay
   - CMI
 
-commands:
-  auction:
-    description: Default auction command.
-    aliases: [deluxeauctions, ah, auc]
-  auctionadmin:
-    description: Default auction admin command.
-    aliases: [deluxeauctionsadmin, ahadmin, aucadmin]
+permissions:
+  isekaiauctions.*:
+    description: Gives access to all IsekaiAuction Permissions
+    children:
+      isekaiauctions.bypass.*: true
+      isekaiauctions.commands.*: true
+      isekaiauctions.commands.admin.*: true
+      isekaiauctions.search: true
+  isekaiauctions.bypass.*:
+    description: Bypass everything in IsekaiAuctions
+    children:
+      isekaiauctions.bypass.creation: true
+      isekaiauctions.bypass.cooldown: true
+  isekaiauctions.item:
+    description: idk
+  isekaiauctions.category:
+    description: idk
+  isekaiauctions.search:
+    description: Search option
+  isekaiauctions.commands.admin.*:
+    description: Gives access to all IA Admin Commands
+    children:
+      isekaiauctions.commands.admin: true
+      isekaiauctions.commands.admin.cancel: true
+      isekaiauctions.commands.admin.lock: true
+      isekaiauctions.commands.admin.menu: true
+      isekaiauctions.commands.admin.reload: true
+      isekaiauctions.commands.admin.status: true
+  isekaiauctions.commands.*:
+    description: Gives access to all IA Player Commands
+    children:
+      isekaiauctions.commands.auctions: true
+      isekaiauctions.commands.sell: true
+      isekaiauctions.commands.view: true
+      isekaiauctions.commands.bids: true
+      isekaiauctions.commands.manage: true

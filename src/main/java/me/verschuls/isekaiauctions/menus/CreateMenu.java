@@ -164,7 +164,7 @@ public class CreateMenu implements MenuManager {
                     return;
                 }
 
-                if (Utils.hasPermission(player, "bypass", "permission")) {
+                if (player.hasPermission("isekaiauctions.bypass")) {
                     if (AuctionCache.getOwnedAuctions(this.player.getUniqueId()).size() >= AuctionHook.getLimit(this.player, "auction_limit")) {
                         Utils.sendMessage(this.player, "reached_auction_limit");
                         return;

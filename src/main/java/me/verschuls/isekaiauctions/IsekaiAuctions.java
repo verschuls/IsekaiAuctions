@@ -1,5 +1,9 @@
 package me.verschuls.isekaiauctions;
 
+import dev.rollczi.litecommands.LiteCommands;
+import dev.rollczi.litecommands.bukkit.LiteBukkitFactory;
+import dev.rollczi.litecommands.luckperms.LuckPermsPermissionResolver;
+import dev.rollczi.litecommands.message.LiteMessages;
 import lombok.Getter;
 import me.verschuls.auctionsapi.cache.AuctionCache;
 import me.verschuls.auctionsapi.cache.CategoryCache;
@@ -11,8 +15,7 @@ import me.verschuls.isekaiauctions.addons.mute.AdvancedBan;
 import me.verschuls.isekaiauctions.addons.mute.BanManager;
 import me.verschuls.isekaiauctions.addons.mute.LiteBans;
 import me.verschuls.isekaiauctions.addons.mute.MuteManager;
-import me.verschuls.isekaiauctions.commands.AuctionAdminCommand;
-import me.verschuls.isekaiauctions.commands.AuctionCommand;
+import me.verschuls.isekaiauctions.commands.*;
 import me.verschuls.isekaiauctions.database.DatabaseManager;
 import me.verschuls.isekaiauctions.handlers.BlacklistHandler;
 import me.verschuls.isekaiauctions.handlers.DataHandler;
@@ -27,6 +30,7 @@ import me.verschuls.isekaiauctions.managers.SortType;
 import me.verschuls.isekaiauctions.menus.InputMenu;
 import me.verschuls.isekaiauctions.others.*;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -76,7 +80,6 @@ public class IsekaiAuctions extends JavaPlugin {
     public boolean loaded = false;
     public boolean disabled = false;
     public boolean converting = false;
-    private Metrics metrics;
 
     public AuctionType auctionType;
     public SortType sortType;
@@ -87,16 +90,27 @@ public class IsekaiAuctions extends JavaPlugin {
     public int createTime;
     public Economy createEconomy;
 
-    public void registerCommandsListeners() {
+    @Getter
+    private static BukkitExecutor executor;
+
+    private LiteCommands<CommandSender> liteCommands;
+
+    @Override
+    public void onLoad() {
+        executor = new BukkitExecutor(this);
+    }
+
+    public void registerCommands() {
         Bukkit.getPluginManager().registerEvents(new PlayerListeners(), IsekaiAuctions.getInstance());
 
-        PluginCommand auction = getCommand("auction");
-        if (auction != null)
-            auction.setExecutor(new AuctionCommand());
-
-        PluginCommand auctionAdmin = getCommand("auctionadmin");
-        if (auctionAdmin != null)
-            auctionAdmin.setExecutor(new AuctionAdminCommand());
+        this.liteCommands = LiteBukkitFactory.builder(this)
+                .permissionResolver(LuckPermsPermissionResolver.blocking())
+                .commands(new AuctionCommand(), new AuctionAdminCommand(), new IsekaiAuctionsCommand())
+                .invalidUsage(new UsageHandler())
+                .missingPermission(new PermissionHandler())
+                .message(LiteMessages.COMMAND_COOLDOWN, new CommandCooldown())
+                .context(Player.class, new PlayerProvider())
+                .build();
     }
 
     @Override
@@ -105,7 +119,6 @@ public class IsekaiAuctions extends JavaPlugin {
         instance = this;
 
         saveDefaultConfig();
-        this.metrics = new Metrics(this, 22020);
         if (!getConfig().getBoolean("settings.enable_plugin", true)) {
             Logger.sendConsoleMessage("Plugin is disabled because enable_plugin setting is false in config!", Logger.LogLevel.INFO);
             Bukkit.getPluginManager().disablePlugin(this);
@@ -134,13 +147,11 @@ public class IsekaiAuctions extends JavaPlugin {
         Logger.sendConsoleMessage("Database successfully loaded! Took &f" + (System.currentTimeMillis() - time) + "ms %level_color%to complete!", Logger.LogLevel.INFO);
 
         loadAddons();
-        registerCommandsListeners();
+        registerCommands();
         InventoryAPI.setup(IsekaiAuctions.this);
 
         if (this.configFile.getBoolean("settings.anti_lag.server.enabled"))
             TaskUtils.runTimerAsync(new ServerTps(), 100L, 1L);
-
-        this.metrics.addCustomChart(new Metrics.SingleLineChart("total_auctions", () -> AuctionCache.getAuctions().size()));
 
         Logger.sendConsoleMessage("Your server is running on &f1." + this.version + "%level_color%.", Logger.LogLevel.INFO);
         Logger.sendConsoleMessage("Plugin is enabled! Plugin Version: &fv" + getDescription().getVersion(), Logger.LogLevel.INFO);
@@ -149,16 +160,17 @@ public class IsekaiAuctions extends JavaPlugin {
     @Override
     public void onDisable() {
         this.disabled = true;
-
+        if (this.liteCommands != null)
+            liteCommands.unregister();
         if (this.loaded)
             IsekaiAuctions.getInstance().databaseManager.shutdown();
-        this.metrics.shutdown();
-
+        if (this.multiServerManager != null)
+            multiServerManager.shutDown();
         for (Player player : Bukkit.getOnlinePlayers())
             if (InventoryAPI.hasInventory(player))
                 player.closeInventory();
 
-        Logger.sendConsoleMessage("Plugin is disabled! &8(&7sedattr was here...&8)", Logger.LogLevel.WARN);
+        Logger.sendConsoleMessage("Plugin is disabled!", Logger.LogLevel.WARN);
     }
 
     public void loadAddons() {

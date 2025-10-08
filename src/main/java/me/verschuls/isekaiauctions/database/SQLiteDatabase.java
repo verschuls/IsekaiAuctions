@@ -498,6 +498,21 @@ public class SQLiteDatabase implements DatabaseManager {
         });
     }
 
+    @Override
+    public boolean status() {
+        try {
+            return getConnection().isValid(10);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    @Override
+    public String type() {
+        return "SQLite";
+    }
+
     private void runTask(Runnable task) {
         if (IsekaiAuctions.getInstance().disabled)
             task.run();

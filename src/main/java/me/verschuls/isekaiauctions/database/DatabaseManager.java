@@ -21,5 +21,7 @@ public interface DatabaseManager {
     void saveItem(UUID uuid, ItemStack item);
     void saveStats(PlayerStats stats);
 
+    String type();
+    boolean status();
     void shutdown();
 }

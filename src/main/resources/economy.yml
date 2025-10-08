@@ -1,21 +1,9 @@
-# _ ________________ ________________ ________________ _
-#|_|________________|________________|________________|_|
-#| |   _____  ______  _       _    _ __   __ ______   | |
-#| |  |  __ \|  ___ \| |     | |  | |\ \ / /|  ___ \  | |
-#|_|  | |  | | |__ \/| |     | |  | | \ V / | |__ \/  |_|
-#| |  | |  | |  __|  | |     | |  | |  > <  |  __     | |
-#| |  | |__| | |___/\| |___/\| |__| | / . \ | |___/\  | |
-#|_|  |_____/|______/|______/\______//_/ \_\\______/  |_|
-#| |                                                  | |
-#| |          DeluxeAuctions - SedatTR#8666           | |
-#|_|________________ ________________ ________________|_|
-#|_|________________|________________|________________|_|
+# IsekaiAuctions - Verschuls
 # If you have any question or suggestion please contact to me.
 # If you are using this plugin, you are accepting Terms of Use.
 #
-# Discord Account: SedatTR#8666
-# Discord Server: https://discord.gg/nchk86TKMT
-# Plugin Wiki: https://sedattr.gitbook.io/deluxeauctions
+# Discord Account: Verschuls
+# Discord Server: https://discord.gg/XbpJHXfMXu
 
 # You need to change default economy name in the config.yml
 # config.yml -> settings -> default_economy
@@ -76,7 +64,7 @@ gold_economy:
   item_economy: GOLD_INGOT
   name: "Gold"
   text: "&e%price% golds"
-  permission: "deluxeauctions.vip"
+  permission: "isekaiauctions.vip"
   item:
     material: GOLD_INGOT
     name: "&eGold Economy"

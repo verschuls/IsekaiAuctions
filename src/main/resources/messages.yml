@@ -1,53 +1,37 @@
-# _ ________________ ________________ ________________ _
-#|_|________________|________________|________________|_|
-#| |   _____  ______  _       _    _ __   __ ______   | |
-#| |  |  __ \|  ___ \| |     | |  | |\ \ / /|  ___ \  | |
-#|_|  | |  | | |__ \/| |     | |  | | \ V / | |__ \/  |_|
-#| |  | |  | |  __|  | |     | |  | |  > <  |  __     | |
-#| |  | |__| | |___/\| |___/\| |__| | / . \ | |___/\  | |
-#|_|  |_____/|______/|______/\______//_/ \_\\______/  |_|
-#| |                                                  | |
-#| |          DeluxeAuctions - SedatTR#8666           | |
-#|_|________________ ________________ ________________|_|
-#|_|________________|________________|________________|_|
+# IsekaiAuctions - Verschuls
 # If you have any question or suggestion please contact to me.
 # If you are using this plugin, you are accepting Terms of Use.
 #
-# Discord Account: SedatTR#8666
-# Discord Server: https://discord.gg/nchk86TKMT
-# Plugin Wiki: https://sedattr.gitbook.io/deluxeauctions
+# Discord Account: Verschuls
+# Discord Server: https://discord.gg/XbpJHXfMXu
+
 no_permission: "&8[&cAuctions&8] &cYou don't have enough permission!"
-converted: "&8[&aAuctions&8] &f%convert_type% &7converted! Took &a%convert_time%ms &7to complete."
-converting: "&8[&cAuctions&8] &7Database is currently converting."
 reloaded: "&8[&aAuctions&8] &7Plugin successfully reloaded! Took &a%reload_time%ms &7to complete."
-only_console: "&8[&cAuctions&8] &7Only console can use this command!"
+only_player: "&8[&cAuctions&8] &7Only player can use this command!"
 loading: "&8[&cAuctions&8] &7Plugin is currently loading!"
 closed: "&8[&cAuctions&8] &7Plugin is temporarily closed!"
 locked: "&8[&aAuctions&8] &7Plugin is locked!"
 unlocked: "&8[&aAuctions&8] &7Plugin is unlocked!"
 refreshing: "&8[&cAuctions&8] &7Auction is currently refreshing!"
+invalid_cmd: "&8[&cAuctions&8] &cThis command doesn't exist!"
+usage: "&8[&cAuctions&8] &eCommand usage: &6%usage%"
 
 player_usage:
-  - "&8[&2DeluxeAuctions&8] &2Player Commands"
-  - "&8- &a/%command_name% menu: &fOpens auctions main menu."
-  - "&8- &a/%command_name% auctions: &fOpens auctions menu."
-  - "&8- &a/%command_name% view [player]: &fOpens player's auctions menu."
-  - "&8- &a/%command_name% sell [price] (duration) (bin/normal): &fSells auction item."
-  - "&8- &a/%command_name% bids: &fOpens view bids menu."
-  - "&8- &a/%command_name% manage: &fOpens manage auctions bids menu."
-  - "&8- &a/%command_name% info: &fShows information about plugin."
+  - "&8[&2IsekaiAuctions&8] &2Player Commands"
+  - "&8- &a/ah help: &fSends this message."
+  - "&8- &a/ah menu: &fOpens auctions main menu."
+  - "&8- &a/ah auctions: &fOpens auctions menu."
+  - "&8- &a/ah view [player name/auction uuid]: &fOpens player's/auction auctions menu."
+  - "&8- &a/ah sell [price] (duration) (bin/normal): &fSells auction item."
+  - "&8- &a/ah bids: &fOpens view bids menu."
+  - "&8- &a/ah manage: &fOpens manage auctions bids menu."
 admin_usage:
-  - "&8[&4DeluxeAuctions&8] &4Admin Commands"
-  - "&8- &c/%command_name% menu [player] (category): &fOpens auctions menu to player."
-  - "&8- &c/%command_name% cancel [auction uuid]: &fCancels player's auction."
-  - "&8- &c/%command_name% lock: &fLocks plugin to close temporarily. (Type again to unlock)"
-  - "&8- &c/%command_name% convert [auctionmaster/zauctionhouse]: &fConverts auctions from other plugins."
-  - "&8- &c/%command_name% reload: &fReloads plugin."
-view_usage: "&cCorrect Usage: &7/%command_name% view [player name/auction uuid]"
-sell_usage: "&cCorrect Usage: &7/%command_name% sell [price] (duration) (bin/normal)"
-admin_cancel_usage: "&cCorrect Usage: &7/%command_name% cancel [auction uuid]"
-admin_convert_usage: "&cCorrect Usage: &7/%command_name% convert [auctionmaster/zauctionhouse]"
-admin_menu_usage: "&cCorrect Usage: &7/%command_name% menu [player] (category)"
+  - "&8[&4IsekaiAuctions&8] &4Admin Commands"
+  - "&8- &c/ahadmin menu [player] (category): &fOpens auctions menu to player."
+  - "&8- &c/ahadmin cancel [auction uuid]: &fCancels player's auction."
+  - "&8- &c/ahadmin lock: &fLocks plugin to close temporarily. (Type again to unlock)"
+  - "&8- &c/ahadmin reload: &fReloads plugin."
+  - "&8- &c/ahadmin status: &fSame as &7/isekaiauctions"
 
 bought: "&8[&aAuctions&8] &7You purchased &f%item_displayname% &7for &6%auction_price%&7!"
 sold: "&8[&aAuctions&8] &f%buyer_displayname% &7bought &f%item_displayname% &7for &6%auction_price%&7!"
@@ -101,7 +85,7 @@ auction_view_info: "&8[&aAuctions&8] &7UUID: &e%auction_uuid%"
 purchase_cooldown: "&8[&cAuctions&8] &7Please wait &f%seconds_left% seconds &7to buy this item."
 bid_cooldown: "&8[&cAuctions&8] &7Please wait &f%seconds_left% seconds &7to bid on this item."
 click_cooldown: "&8[&cAuctions&8] &7Please wait a moment while clicking between items."
-command_cooldown: "&8[&cAuctions&8] &7Please wait a moment while using auction command."
+command_cooldown: "&8[&cAuctions&8] &7Please wait %delay%s before using auction command again."
 
 reached_bid_limit: "&8[&cAuctions&8] &7You reached your bid limit!"
 reached_auction_limit: "&8[&cAuctions&8] &7You reached your auction limit!"

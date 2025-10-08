@@ -175,7 +175,7 @@ public class AuctionHook {
     }
 
     public static String isSellable(Player player, ItemStack item) {
-        if (!Utils.hasPermission(player, "item", item.getType().name()))
+        if (!player.hasPermission("isekaiauctions.item."+item.getType().name()))
             return "no_permission_for_item";
 
         if (CategoryCache.getItemCategory(item).isEmpty())

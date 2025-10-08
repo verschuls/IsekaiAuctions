@@ -28,43 +28,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Utils {
-    public static boolean hasPermission(CommandSender player, String... strings) {
-        if (player.isOp())
-            return true;
-        if (strings.length < 2)
-            return true;
-
-        String type = strings[0];
-        String object = strings[1];
-        ConfigurationSection section = IsekaiAuctions.getInstance().configFile.getConfigurationSection("permissions." + type);
-        if (section == null)
-            return true;
-
-        String enabled = section.getString("enabled");
-        if (enabled != null && !enabled.isEmpty() && !section.getBoolean("enabled"))
-            return !type.equalsIgnoreCase("bypass");
-
-        if (type.equals("item") || type.equals("category")) {
-            String permission = section.getString("permission");
-            if (permission == null || permission.isEmpty())
-                return true;
-
-            permission = permission
-                    .replace("%" + type + "_name%", object);
-
-            List<String> list = section.getStringList(type + "_list");
-            if (list.contains(object))
-                return player.hasPermission(permission);
-            else
-                return true;
-        }
-
-        String permission = section.getString(object);
-        if (permission == null || permission.isEmpty())
-            return true;
-
-        return player.hasPermission(permission);
-    }
 
     public static String strip(String text) {
         if (text == null || text.isEmpty())
@@ -72,21 +35,6 @@ public class Utils {
 
         text = Utils.colorize(text);
         return ChatColor.stripColor(text);
-    }
-
-    public static void changeName(ItemStack item, String name, PlaceholderUtil placeholderUtil) {
-        if (item == null)
-            return;
-        if (name.isEmpty())
-            return;
-
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null)
-            return;
-
-        meta.setDisplayName(colorize(replacePlaceholders(name, placeholderUtil)));
-
-        item.setItemMeta(meta);
     }
 
     public static void changeLore(ItemStack item, List<String> lore, PlaceholderUtil placeholderUtil) {

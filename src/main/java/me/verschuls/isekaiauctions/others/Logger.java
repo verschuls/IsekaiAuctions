@@ -4,7 +4,7 @@ import lombok.Getter;
 import org.bukkit.Bukkit;
 
 public class Logger {
-    @Getter private static final String prefix = "&8[&bDeluxeAuctions&8]";
+    @Getter private static final String prefix = "&8[&bIsekaiAuctions&8]";
 
     public static void sendConsoleMessage(String message, LogLevel level) {
         if (message == null || message.isEmpty())

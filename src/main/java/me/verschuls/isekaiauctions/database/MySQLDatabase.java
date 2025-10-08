@@ -2,10 +2,9 @@ package me.verschuls.isekaiauctions.database;
 
 import me.verschuls.auctionsapi.cache.AuctionCache;
 import me.verschuls.auctionsapi.cache.PlayerCache;
-//import me.verschuls.deluxeauctionsredis.RedisPlugin;
 import me.verschuls.isekaiauctions.IsekaiAuctions;
 import me.verschuls.isekaiauctions.addons.multiserver.BungeeAddon;
-import me.verschuls.isekaiauctions.addons.multiserver.RedisAddon;
+import me.verschuls.isekaiauctions.addons.multiserver.redis.RedisAddon;
 import me.verschuls.isekaiauctions.managers.Auction;
 import me.verschuls.isekaiauctions.managers.AuctionType;
 import me.verschuls.isekaiauctions.managers.PlayerBid;
@@ -13,7 +12,6 @@ import me.verschuls.isekaiauctions.managers.PlayerStats;
 import me.verschuls.isekaiauctions.others.Logger;
 import me.verschuls.isekaiauctions.others.TaskUtils;
 import me.verschuls.isekaiauctions.others.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 
@@ -33,6 +31,8 @@ public class MySQLDatabase implements DatabaseManager {
     private String auctions;
     private String items;
     private String stats;
+
+
 
     private void load(ResultSet set) throws SQLException {
         long endTime = set.getLong(7);
@@ -110,6 +110,20 @@ public class MySQLDatabase implements DatabaseManager {
         try {
             if (isConnected())
                 this.connection.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public String type() {
+        return "MySQL";
+    }
+
+    @Override
+    public boolean status() {
+        try {
+            return getConnection().isValid(10);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -271,17 +285,13 @@ public class MySQLDatabase implements DatabaseManager {
                 }
 
                 IsekaiAuctions.getInstance().loaded = true;
-                if (Bukkit.getPluginManager().isPluginEnabled("DeluxeAuctionsRedis")) {
-                    /*me.verschuls.deluxeauctionsredis.RedisPlugin redis = (RedisPlugin) Bukkit.getPluginManager()
-                            .getPlugin("DeluxeAuctionsRedis");
-                    if (redis != null && redis.isLoaded()) {
-                        IsekaiAuctions.getInstance().multiServerManager = new RedisAddon();
-                        Logger.sendConsoleMessage("Enabled &fDeluxeAuctions Redis %level_color%support!",
-                                Logger.LogLevel.INFO);
-                    }*/
+                if (IsekaiAuctions.getInstance().configFile.getBoolean("redis.enabled", false)) {
+                    IsekaiAuctions.getInstance().multiServerManager = new RedisAddon();
+                    Logger.sendConsoleMessage("Enabled &fIsekaiAuctions Redis %level_color%support!",
+                            Logger.LogLevel.INFO);
                 } else if (IsekaiAuctions.getInstance().configFile.getBoolean("addons.bungeecord", false)) {
                     IsekaiAuctions.getInstance().multiServerManager = new BungeeAddon();
-                    Logger.sendConsoleMessage("Enabled &fDeluxeAuctions Bungee %level_color%support!",
+                    Logger.sendConsoleMessage("Enabled &fIsekaiAuctions Bungee %level_color%support!",
                             Logger.LogLevel.INFO);
                 }
 

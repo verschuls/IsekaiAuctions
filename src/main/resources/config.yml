@@ -1,21 +1,9 @@
-# _ ________________ ________________ ________________ _
-#|_|________________|________________|________________|_|
-#| |   _____  ______  _       _    _ __   __ ______   | |
-#| |  |  __ \|  ___ \| |     | |  | |\ \ / /|  ___ \  | |
-#|_|  | |  | | |__ \/| |     | |  | | \ V / | |__ \/  |_|
-#| |  | |  | |  __|  | |     | |  | |  > <  |  __     | |
-#| |  | |__| | |___/\| |___/\| |__| | / . \ | |___/\  | |
-#|_|  |_____/|______/|______/\______//_/ \_\\______/  |_|
-#| |                                                  | |
-#| |          DeluxeAuctions - SedatTR#8666           | |
-#|_|________________ ________________ ________________|_|
-#|_|________________|________________|________________|_|
+# IsekaiAuctions - Verschuls
 # If you have any question or suggestion please contact to me.
 # If you are using this plugin, you are accepting Terms of Use.
 #
-# Discord Account: SedatTR#8666
-# Discord Server: https://discord.gg/nchk86TKMT
-# Plugin Wiki: https://sedattr.gitbook.io/deluxeauctions
+# Discord Account: Verschuls
+# Discord Server: https://discord.gg/XbpJHXfMXu
 
 # PLUGIN SETTINGS
 settings:
@@ -133,33 +121,41 @@ player_limits:
   auction_limit:
     default: 9
     permissions:
-      - deluxeauctions.vip:18
-      - deluxeauctions.mvip:27
+      - isekaiauctions.vip:18
+      - isekaiauctions.mvip:27
   duration_limit:
     default: 604800
     permissions:
-      - deluxeauctions.vip:907200
-      - deluxeauctions.mvip:1209600
+      - isekaiauctions.vip:907200
+      - isekaiauctions.mvip:1209600
   price_limit:
     default: 250000000
     permissions:
-      - deluxeauctions.vip:500000000
-      - deluxeauctions.mvip:100000000
+      - isekaiauctions.vip:500000000
+      - isekaiauctions.mvip:100000000
   bid_limit:
     default: 9
     permissions:
-      - deluxeauctions.vip:500000000
-      - deluxeauctions.mvip:100000000
+      - isekaiauctions.vip:500000000
+      - isekaiauctions.mvip:100000000
 
 # PLUGIN DATABASE
 database:
   type: "sqlite" # Database Types: mysql, sqlite.
-  table_prefix: "da_"
+  table_prefix: "ia_"
   mysql_settings: # FOR MYSQL DATABASE
-    link: "com.mysql.jdbc.Driver" # new version: com.mysql.cj.jdbc.Driver
+    link: "com.mysql.cj.jdbc.Driver"
     url: "jdbc:mysql://localhost:1907/Auction" # jdbc:mysql://host:port/database
     user: "SedatTR" # MySQL Username
-    password: "DeluxeAuctions" # MySQL Password
+    password: "IsekaiAuctions" # MySQL Password
+
+# Redis - MultiServer
+redis:
+  enabled: false
+  channel: "IsekaiAuctions"
+  host: ""
+  port: 6379
+  password: ""
 
 # PLUGIN ADDONS
 addons:
@@ -251,66 +247,6 @@ time_format:
     minutes: " minutes"
     seconds: " seconds"
     ending: "ENDING"
-
-# PLUGIN PERMISSIONS
-permissions:
-  bypass: # this will bypass the auction create confirmation
-    enabled: false
-    permission: "deluxeauctions.bypass"
-  item:
-    enabled: false
-    permission: "deluxeauctions.item.%item_name%"
-    item_list:
-      - DIAMOND
-  category:
-    enabled: false
-    permission: "deluxeauctions.category.%category_name%"
-    category_list:
-      - tools
-  search:
-    enabled: false
-    permission: "deluxeauctions.search"
-  player_commands:
-    command: ""
-    menu: ""
-    sell: ""
-    auctions: "auctions.auctions"
-    view: "auctions.view"
-    bids: "auctions.bids"
-    manage: "auctions.manage"
-  admin_commands:
-    command: "auctionadmin.command"
-    convert: "auctionadmin.convert"
-    cancel: "auctionadmin.cancel"
-    lock: "auctionadmin.lock"
-    menu: "auctionadmin.menu"
-    reload: "auctionadmin.reload"
-
-# PLUGIN COMMAND ARGS
-commands:
-  convert:
-    - convert
-  cancel:
-    - cancel
-  lock:
-    - lock
-  reload:
-    - reload
-  info:
-    - info
-  menu:
-    - open
-    - menu
-  sell:
-    - sell
-  auctions:
-    - auctions
-  view:
-    - view
-  manage:
-    - manage
-  bids:
-    - bids
 
 # MENU SOUNDS
 sounds:

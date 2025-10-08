@@ -696,7 +696,8 @@ public class AuctionsMenu implements MenuManager {
         categoryItem = categoryItem.clone();
 
         boolean isCategorySame = auctionCategory.getName().equalsIgnoreCase(this.playerAuction.getCategory().getName());
-        boolean hasPermission = Utils.hasPermission(this.player, "category", auctionCategory.getName());
+        boolean hasPermission = this.player.hasPermission("isekaiauctions.category."+auctionCategory.getName());
+
 
         String type;
         if (hasPermission) {
