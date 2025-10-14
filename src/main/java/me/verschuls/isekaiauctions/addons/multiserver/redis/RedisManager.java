@@ -10,6 +10,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.params.SetParams;
 
 import java.time.Duration;
@@ -40,7 +41,9 @@ public class RedisManager {
     private RedisManager() {
         FileConfiguration config = IsekaiAuctions.getInstance().configFile;
         channel = config.getString("redis.channel");
-        this.client = new JedisPool(getJedisPoolConfig(), String.format("redis://:%s@%s:%d", config.getString("redis.password"), config.getString("redis.host"), config.getInt("redis.port")));
+        this.client = new JedisPool(getJedisPoolConfig(), String.format("redis://%s:%s@%s:%d",
+                config.getString("redis.user", ""), config.getString("redis.password", ""), config.getString("redis.host"), config.getInt("redis.port")));
+
 
         Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &eRedis is connecting...", Logger.LogLevel.INFO);
         try (Jedis jedis = client.getResource()) {

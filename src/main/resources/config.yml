@@ -93,6 +93,7 @@ redis:
   channel: "isekaiauctions"   # Redis pub/sub channel name
   host: ""                    # Redis server IP/hostname
   port: 6379                  # Redis server port (default: 6379)
+  user: ""                    # Redis user auth (leave empty if none)
   password: ""                # Redis auth password (leave empty if none)
 
 # AUCTION MESSAGE BROADCASTS
