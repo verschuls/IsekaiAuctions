@@ -9,6 +9,7 @@ public class ServerTps implements Runnable {
             return 20.0D;
         }
 
+
         int target = (TICK_COUNT - 1 - ticks) % TICKS.length;
         if (target < 0)
             return 20.0D;

@@ -3,8 +3,7 @@ package me.verschuls.isekaiauctions.handlers;
 import me.verschuls.auctionsapi.cache.EnchantCache;
 import me.verschuls.isekaiauctions.IsekaiAuctions;
 import me.verschuls.isekaiauctions.configupdater.ConfigUpdater;
-import me.verschuls.isekaiauctions.database.MySQLDatabase;
-import me.verschuls.isekaiauctions.database.SQLiteDatabase;
+import me.verschuls.isekaiauctions.database.*;
 import me.verschuls.isekaiauctions.managers.AuctionType;
 import me.verschuls.isekaiauctions.managers.CustomItem;
 import me.verschuls.isekaiauctions.managers.Economy;
@@ -239,17 +238,23 @@ public class DataHandler {
     }
 
     public void setupDatabase() {
-        if (IsekaiAuctions.getInstance().databaseManager != null)
+        if (IsekaiAuctions.getInstance().databaseManager != null) return;
+        ConfigurationSection section = IsekaiAuctions.getInstance().getConfig().getConfigurationSection("database");
+        Database.Config config = Database.Config.fromSection(section);
+        String method = IsekaiAuctions.getInstance().getConfig().getString("storage_method", "h2");
+        Database database = switch (Database.Type.match(method).orElse(null)) {
+            case H2 -> new H2Database();
+            case MYSQL -> new MySQLDatabase(Database.Type.MYSQL ,config);
+            case MARIADB -> new MariaDBDatabase(config);
+            case POSTGRESQL -> new PostgreSQLDatabase(config);
+            case null -> null;
+        };
+        if (database == null) {
+            Logger.sendConsoleMessage("Couldn't find storage method &4\""+method+"\" &cplease check your configuration. &4Plugin will be disabled.", Logger.LogLevel.ERROR);
+            IsekaiAuctions.disablePlugin();
             return;
-
-        String dataType = IsekaiAuctions.getInstance().getConfig().getString("database.type", "sqlite");
-        if (dataType.isEmpty())
-            dataType = "sqlite";
-
-        if (dataType.equalsIgnoreCase("mysql"))
-            IsekaiAuctions.getInstance().databaseManager = new MySQLDatabase();
-        else
-            IsekaiAuctions.getInstance().databaseManager = new SQLiteDatabase();
+        }
+        IsekaiAuctions.getInstance().databaseManager = database;
     }
 
     private boolean setupEconomy() {
@@ -268,72 +273,15 @@ public class DataHandler {
         return true;
     }
 
-    /*
-    public Boolean setupEconomy() {
-        String economyType = DeluxeAuctions.getInstance().configFile.getString("economy.type", "vault");
-        if (economyType.isEmpty())
-            return false;
+    public enum DBType {
+        H2,
+        MYSQL,
+        MARIADB,
+        POSTGRESQL;
 
-        switch (economyType.toLowerCase()) {
-            case "vault":
-                if (!Bukkit.getServer().getPluginManager().isPluginEnabled("Vault"))
-                    return false;
-
-                DeluxeAuctions.getInstance().economyManager = new VaultEconomy();
-
-                return true;
-            case "edprison":
-                if (!Bukkit.getServer().getPluginManager().isPluginEnabled("EdPrison"))
-                    return false;
-
-                DeluxeAuctions.getInstance().economyManager = new EdPrisonEconomy();
-                return true;
-            case "skript":
-                if (!Bukkit.getServer().getPluginManager().isPluginEnabled("Skript"))
-                    return false;
-
-                DeluxeAuctions.getInstance().economyManager = new SkriptEconomy();
-                return true;
-            case "royaleeconomy_balance":
-                if (!Bukkit.getServer().getPluginManager().isPluginEnabled("RoyaleEconomy"))
-                    return false;
-
-                DeluxeAuctions.getInstance().economyManager = new RoyaleEconomyBalance();
-                return true;
-            case "royaleeconomy_bank":
-                if (!Bukkit.getServer().getPluginManager().isPluginEnabled("RoyaleEconomy"))
-                    return false;
-
-                DeluxeAuctions.getInstance().economyManager = new RoyaleEconomyBank();
-                return true;
-            case "lands":
-                if (!Bukkit.getServer().getPluginManager().isPluginEnabled("Lands"))
-                    return false;
-
-                DeluxeAuctions.getInstance().economyManager = new LandsEconomy();
-                return true;
-            case "tokenmanager":
-                if (!Bukkit.getServer().getPluginManager().isPluginEnabled("TokenManager"))
-                    return false;
-
-                DeluxeAuctions.getInstance().economyManager = new TokenManagerEconomy();
-                return true;
-            case "playerpoints":
-                if (!Bukkit.getServer().getPluginManager().isPluginEnabled("PlayerPoints"))
-                    return false;
-
-                DeluxeAuctions.getInstance().economyManager = new PlayerPointsEconomy();
-                return true;
-            case "ultraeconomy":
-                if (!Bukkit.getServer().getPluginManager().isPluginEnabled("UltraEconomy"))
-                    return false;
-
-                DeluxeAuctions.getInstance().economyManager = new UltraEconomy();
-                return true;
-            default:
-                DeluxeAuctions.getInstance().economyManager = new YamlEconomy();
-                return true;
+        @Override
+        public String toString() {
+            return name().toLowerCase();
         }
     }
-     */
 }

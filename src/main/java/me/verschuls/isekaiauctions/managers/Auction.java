@@ -200,7 +200,7 @@ public class Auction {
         AuctionCache.removeAuction(this.auctionUUID);
 
         // Database
-        IsekaiAuctions.getInstance().databaseManager.deleteAuction(this.auctionUUID.toString());
+        IsekaiAuctions.getInstance().databaseManager.deleteAuction(this.auctionUUID);
         IsekaiAuctions.getInstance().databaseManager.saveStats(stats);
         return true;
     }
@@ -523,7 +523,7 @@ public class Auction {
         if (isAllClaimed) {
             AuctionCache.addEndedAuction(this);
             AuctionCache.removeAuction(this.auctionUUID);
-            IsekaiAuctions.getInstance().databaseManager.deleteAuction(this.auctionUUID.toString());
+            IsekaiAuctions.getInstance().databaseManager.deleteAuction(this.auctionUUID);
         } else
             IsekaiAuctions.getInstance().databaseManager.saveAuction(this);
 
@@ -626,7 +626,7 @@ public class Auction {
         if (isAllClaimed) {
             AuctionCache.addEndedAuction(this);
             AuctionCache.removeAuction(this.auctionUUID);
-            IsekaiAuctions.getInstance().databaseManager.deleteAuction(this.auctionUUID.toString());
+            IsekaiAuctions.getInstance().databaseManager.deleteAuction(this.auctionUUID);
         } else
             IsekaiAuctions.getInstance().databaseManager.saveAuction(this);
 

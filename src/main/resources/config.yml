@@ -2,14 +2,14 @@
 # If you have any question or suggestion please contact to me.
 # If you are using this plugin, you are accepting Terms of Use.
 #
-# Discord Account: Verschuls
+# Website: https://verschuls.xyz
 # Discord Server: https://discord.gg/XbpJHXfMXu
 
 # PLUGIN SETTINGS
 settings:
   enable_plugin: true # Plugin can be enabled and disabled
-  enable_debug: true # Useful for debugging database and some systems.
-  enable_log: true # Internal logging system, useful for finding exploits and bugs
+  enable_debug: false # Useful for debugging database and some systems.
+  enable_log: false # Internal logging system, useful for finding exploits and bugs
   enable_main_menu: true
   input_type: "sign" # Default input, types: sign, anvil or chat
   # Uncategorized items will be found in this category
@@ -53,6 +53,47 @@ settings:
     world_list:
       - world_the_end
       - world_nether
+
+
+# DATABASE STORAGE
+# Remote databases (require connection settings below):
+#   - MySQL, MariaDB (preferred), PostgreSQL
+# Local database (no extra config needed):
+#   - H2 (default)
+storage_method: h2
+# REMOTE DATABASE SETTINGS (skip if using H2)
+# Connection details shared between MySQL, MariaDB, PostgreSQL
+database:
+  address: "" # e.g. 0.0.0.0:3306
+  database: ""
+  username: ""
+  password: ""
+
+  # DEFAULT VALUES WORK WELL FOR MOST SERVERS - Only adjust if needed
+  # ⚠️ For most users: Only adjust maximum_pool_size (for player count) and minimum_idle (for performance)
+  pool_settings:
+    # Max connections to DB (increase for 50+ players)
+    maximum_pool_size: 20
+    # Min ready connections (set to 10-15 for better performance)
+    minimum_idle: 10
+    # Connection refresh interval - 30 min (keep default)
+    maximum_lifetime: 1800000
+    # Wait time for connection - 5 sec (keep default)
+    connection_timeout: 5000
+    # Remove unused connections after 15 min (keeps pool efficient)
+    idle_timeout: 600000
+
+
+# REDIS MULTISERVER SYNC
+# Enables real-time auction synchronization across multiple servers
+# Redis acts as a message broker to instantly share auction data between servers
+# When enabled, all auction events (create/bid/sell) are broadcast to all connected servers
+redis:
+  enabled: false              # Enable multiserver auction sync
+  channel: "isekaiauctions"   # Redis pub/sub channel name
+  host: ""                    # Redis server IP/hostname
+  port: 6379                  # Redis server port (default: 6379)
+  password: ""                # Redis auth password (leave empty if none)
 
 # AUCTION MESSAGE BROADCASTS
 # With this system, messages can be clickable.
@@ -138,24 +179,6 @@ player_limits:
     permissions:
       - isekaiauctions.vip:500000000
       - isekaiauctions.mvip:100000000
-
-# PLUGIN DATABASE
-database:
-  type: "sqlite" # Database Types: mysql, sqlite.
-  table_prefix: "ia_"
-  mysql_settings: # FOR MYSQL DATABASE
-    link: "com.mysql.cj.jdbc.Driver"
-    url: "jdbc:mysql://localhost:1907/Auction" # jdbc:mysql://host:port/database
-    user: "SedatTR" # MySQL Username
-    password: "IsekaiAuctions" # MySQL Password
-
-# Redis - MultiServer
-redis:
-  enabled: false
-  channel: "IsekaiAuctions"
-  host: ""
-  port: 6379
-  password: ""
 
 # PLUGIN ADDONS
 addons:

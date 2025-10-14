@@ -6,7 +6,10 @@ version: "${version}"
 api-version: 1.13
 folia-supported: true
 libraries:
+  - com.h2database:h2:2.4.240
+  - com.mysql:mysql-connector-j:9.4.0
   - org.mariadb.jdbc:mariadb-java-client:3.5.4
+  - org.postgresql:postgresql:42.7.8
 description: Aimed to improve performance and stability of the original DeluxeAuctions plugin.
 softdepend:
   - Vault

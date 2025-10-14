@@ -1,7 +1,11 @@
 package me.verschuls.isekaiauctions.others;
 
 import lombok.Getter;
+import me.verschuls.isekaiauctions.IsekaiAuctions;
 import org.bukkit.Bukkit;
+
+import java.util.Arrays;
+import java.util.logging.Level;
 
 public class Logger {
     @Getter private static final String prefix = "&8[&bIsekaiAuctions&8]";
@@ -15,6 +19,15 @@ public class Logger {
                 .replace("%prefix%", getPrefix())
                 .replace("%level_prefix%", level.getPrefix())
                 .replace("%level_color%", level.getColor())));
+    }
+
+    public static void logError(Exception e) {
+        IsekaiAuctions.getInstance().getLogger().log(Level.SEVERE, "Error occurred: ", e.fillInStackTrace());
+        IsekaiAuctions.getInstance().getLogger().log(Level.SEVERE, Arrays.toString(e.getStackTrace()));
+    }
+
+    public static void logError(Throwable e) {
+        IsekaiAuctions.getInstance().getLogger().log(Level.SEVERE, "Error occurred: ", e);
     }
 
     @Getter

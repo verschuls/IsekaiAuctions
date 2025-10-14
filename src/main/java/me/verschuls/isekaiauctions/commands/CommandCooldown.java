@@ -6,7 +6,6 @@ import dev.rollczi.litecommands.message.InvokedMessage;
 import dev.rollczi.litecommands.time.DurationParser;
 import me.verschuls.isekaiauctions.IsekaiAuctions;
 import me.verschuls.isekaiauctions.others.PlaceholderUtil;
-import me.verschuls.isekaiauctions.others.Utils;
 import org.bukkit.command.CommandSender;
 
 import static me.verschuls.isekaiauctions.others.Utils.colorize;

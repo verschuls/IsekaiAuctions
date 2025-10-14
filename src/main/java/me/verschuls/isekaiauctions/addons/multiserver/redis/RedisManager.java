@@ -1,178 +1,200 @@
 package me.verschuls.isekaiauctions.addons.multiserver.redis;
 
-import eu.decentsoftware.holograms.api.utils.scheduler.S;
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.RedisFuture;
-import io.lettuce.core.ScriptOutputType;
-import io.lettuce.core.SetArgs;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.async.RedisAsyncCommands;
-import io.lettuce.core.pubsub.RedisPubSubAdapter;
-import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
-import lombok.extern.java.Log;
+import lombok.AccessLevel;
+import lombok.Getter;
 import me.verschuls.auctionsapi.cache.AuctionCache;
 import me.verschuls.isekaiauctions.IsekaiAuctions;
 import me.verschuls.isekaiauctions.others.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.params.SetParams;
 
-import java.util.HashSet;
+import java.time.Duration;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RedisManager {
 
+    @Getter(AccessLevel.PACKAGE)
+    private static String channel;
 
-    private final String channel;
+    @Getter(AccessLevel.PACKAGE)
+    private final JedisPool client;
 
-    private final RedisClient client;
-    private final StatefulRedisConnection<String, String> connection;
-    private final StatefulRedisPubSubConnection<String, String> pubSubConnection;
+    @Getter(AccessLevel.PACKAGE)
+    private static final Set<String> messages = ConcurrentHashMap.newKeySet();
 
-    private final Set<String> messages = new HashSet<String>();
+    private RedisThread thread;
 
-    RedisManager() {
+    private static final RedisManager instance = new RedisManager();
+
+    public static RedisManager get() {
+        return instance;
+    }
+
+    private RedisManager() {
         FileConfiguration config = IsekaiAuctions.getInstance().configFile;
-        this.channel = config.getString("redis.channel");
-        this.client = RedisClient.create(String.format("redis://:%s@%s:%d", config.getString("redis.password"), config.getString("redis.host"), config.getInt("redis.port")));
-        this.connection = this.client.connect();
-        this.pubSubConnection = this.client.connectPubSub();
+        channel = config.getString("redis.channel");
+        this.client = new JedisPool(getJedisPoolConfig(), String.format("redis://:%s@%s:%d", config.getString("redis.password"), config.getString("redis.host"), config.getInt("redis.port")));
 
-        connection.async().ping().thenAccept(pong -> {
-            Logger.sendConsoleMessage("&8[&bDeluxeAuctions Redis&8] &aRedis successfully connected!", Logger.LogLevel.INFO);
+        Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &eRedis is connecting...", Logger.LogLevel.INFO);
+        try (Jedis jedis = client.getResource()) {
+            if (!jedis.ping().equalsIgnoreCase("pong")) {
+                throw new IllegalStateException("Redis ping failed");
+            }
+            Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &aRedis successfully connected!", Logger.LogLevel.INFO);
             subscribeToChannel();
-        }).exceptionally(e -> {
-            Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &cRedis Connection Failed: &f" + e.getMessage(), Logger.LogLevel.ERROR);
+        } catch (Exception e) {
+            Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &cRedis Connection Failed", Logger.LogLevel.ERROR);
             Logger.sendConsoleMessage("&8[&bIsekaiAuction&8] &cPlugin will be shutdown!", Logger.LogLevel.ERROR);
             Bukkit.getPluginManager().disablePlugin(IsekaiAuctions.getInstance());
-            return null;
-        });
+        }
+    }
+
+    private JedisPoolConfig getJedisPoolConfig() {
+        JedisPoolConfig config = new JedisPoolConfig();
+        config.setMaxTotal(15);
+        config.setMinIdle(5);
+        config.setMaxIdle(7);
+        config.setMaxWait(Duration.ofSeconds(5));
+        config.setTestOnBorrow(true);
+        return config;
     }
 
     private void subscribeToChannel() {
         if (channel == null || channel.isEmpty()) {
-            Logger.sendConsoleMessage("&8[&bDeluxeAuctions Redis&8] &cChannel is invalid, can't subscribe!", Logger.LogLevel.ERROR);
+            Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &cChannel is invalid, can't subscribe!", Logger.LogLevel.ERROR);
             Logger.sendConsoleMessage("&8[&bIsekaiAuction&8] &cPlugin will be shutdown!", Logger.LogLevel.ERROR);
             Bukkit.getPluginManager().disablePlugin(IsekaiAuctions.getInstance());
             return;
         }
-        pubSubConnection.addListener(new RedisPubSubAdapter<String, String>() {
-            @Override
-            public void message(String messageChannel, String text) {
-                if (!messageChannel.equals(channel)) return;
-                if (messages.contains(text)) {
-                    messages.remove(text);
-                    return;
-                }
-                if (text.startsWith("AUCTION"))
-                    IsekaiAuctions.getExecutor().execute(()->
-                            AuctionCache.addUpdatingAuction(UUID.fromString(text.split(":")[1])));
+        thread = new RedisThread();
+        thread.start();
+    }
 
-                IsekaiAuctions.getExecutor().execute(()->IsekaiAuctions.getInstance().multiServerManager.handleMessage(text));
+    public static void onMessage(String messageChannel, String text) {
+        if (!messageChannel.equals(channel)) return;
+        if (messages.contains(text)) {
+            messages.remove(text);
+            return;
+        }
+        if (text.startsWith("AUCTION"))
+            IsekaiAuctions.getExecutor().execute(()->
+                    AuctionCache.addUpdatingAuction(UUID.fromString(text.split(":")[1])));
+
+        IsekaiAuctions.getExecutor().execute(()->IsekaiAuctions.getInstance().multiServerManager.handleMessage(text));
+    }
+
+
+
+
+    public boolean isAuctionMessagePublished(String uuid) {
+        if (client == null) return false;
+        try (Jedis jedis = client.getResource()) {
+            long count = jedis.scard(uuid);
+            return count > 0L;
+        } catch (Exception e) {
+            Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &cFailed to check if messages are published for UUID &f" + uuid + " &cin Redis: &f" + e.getMessage(), Logger.LogLevel.WARN);
+            return true;
+        }
+    }
+
+    public void removeAuctionMessage(String uuid, String text) {
+        if (client == null) return;
+        IsekaiAuctions.getExecutor().execute(()->{
+            try (Jedis jedis = client.getResource()) {
+                long srem = jedis.srem(uuid, text);
+                if (srem == 0) Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &cFailed to remove message &f" + text + " &cfrom Redis", Logger.LogLevel.ERROR);
+            } catch (Exception e) {
+                Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &cFailed to remove message &f" + text + " &cfrom Redis", Logger.LogLevel.ERROR);
+                Logger.logError(e);
             }
         });
     }
 
-
-    public boolean isAuctionMessagePublished(String uuid) {
-        if (connection == null) return false;
-        return CompletableFuture.supplyAsync(()->{
-            try {
-                long count = connection.async().scard(uuid).get();
-                return count > 0L;
-            } catch (CancellationException | ExecutionException | InterruptedException e) {
-                Logger.sendConsoleMessage("&8[&bDeluxeAuctions Redis&8] &cFailed to check if messages are published for UUID &f" + uuid + " &cin Redis: &f" + e.getMessage(), Logger.LogLevel.WARN);
-                return true;
-            }
-        }, IsekaiAuctions.getExecutor()).exceptionallyAsync(e -> {
-            Logger.sendConsoleMessage("&8[&dIsekaiAuctions&8] &cUnexpected Redis error: &f" + e.getMessage(), Logger.LogLevel.ERROR);
-            return false;
-        }, IsekaiAuctions.getExecutor()).join();
-    }
-
-    public void removeAuctionMessage(String uuid, String text) {
-        if (connection == null) return;
-        connection.async().srem(uuid, text).exceptionallyAsync(e -> {
-            Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &cFailed to remove message &f" + text + " &cfrom Redis: &f" + e.getMessage(), Logger.LogLevel.ERROR);
-            return 0L;
-        }, IsekaiAuctions.getExecutor());
-    }
-
     public void publish(String text) {
-        if (connection == null) return;
-        connection.async().publish(this.channel, text).thenAcceptAsync((e)->{
-            this.messages.add(text);
-            }, IsekaiAuctions.getExecutor()).exceptionallyAsync(e -> {
-            Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &cFailed to publish &f" + text + " &cmessage to Redis: &f" + e.getMessage(), Logger.LogLevel.ERROR);
-            return null;
-        }, IsekaiAuctions.getExecutor());
+        if (client == null) return;
+        IsekaiAuctions.getExecutor().execute(()->{
+            try (Jedis jedis = client.getResource()) {
+                long subs = jedis.publish(channel, text);
+                if (subs >= 0) messages.add(text);
+                else Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &cFailed to publish &f" + text + " &cmessage to Redis", Logger.LogLevel.WARN);
+            } catch (Exception e) {
+                Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &cFailed to publish &f" + text + " &cmessage to Redis", Logger.LogLevel.ERROR);
+                Logger.logError(e);
+            }
+        });
     }
 
     private boolean acquireLock(String lockKey, String lockValue, int expiration) {
-        try {
-            String result = connection.async().set(lockKey, lockValue, SetArgs.Builder.nx().px(expiration)).get();
+        if (client == null) return false;
+        try (Jedis jedis = client.getResource()) {
+            String result = jedis.set(lockKey, lockValue, SetParams.setParams().nx().px(expiration));
+            if (result == null) return false;
             return result.equals("OK");
         } catch (Exception e) {
+            Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &cUnexpected Redis error: &f" + e.getMessage(), Logger.LogLevel.ERROR);
             return false;
         }
     }
 
     private void releaseLock(boolean isLockAcquired, String lockKey, String lockValue) {
+        if (client == null) return;
         if (!isLockAcquired) return;
-        if (connection == null) return;
         String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
-        connection.async().eval(script, ScriptOutputType.INTEGER, lockKey, lockValue);
+        IsekaiAuctions.getExecutor().execute(()->{
+            try (Jedis jedis = client.getResource()) {
+                jedis.eval(script, List.of(lockKey), List.of(lockValue));
+            } catch (Exception e) {
+                Logger.logError(e);
+            }
+        });
     }
 
     public boolean publish(String uuid, String text) {
-        if (connection == null) return false;
-        return CompletableFuture.supplyAsync(()->{
-            String lockKey = "lock:" + uuid;
-            String lockValue = UUID.randomUUID().toString();
-            boolean isLockAcquired = false;
-            try {
-                int lockExpiration = 1000;
-                int uuidExpiration = 15;
-                isLockAcquired = this.acquireLock(lockKey, lockValue, lockExpiration);
-                if (!isLockAcquired) {
-                    Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &cFailed to acquire lock for UUID &f" + uuid, Logger.LogLevel.ERROR);
-                    return false;
-                }
-                this.messages.add(text);
-                String lua = "if redis.call('exists', KEYS[1]) == 0 then " +
-                        "redis.call('sadd', KEYS[1], ARGV[1]); " +
-                        "redis.call('publish', KEYS[2], ARGV[1]); " +
-                        "redis.call('expire', KEYS[1], " + uuidExpiration + "); " +
-                        "return 1; else return 0; end";
-                Long result = connection.sync().eval(lua, ScriptOutputType.INTEGER, new String[]{uuid, this.channel}, text, String.valueOf(uuidExpiration));
-                if (result == 0L) Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &eUUID &f" + uuid + " &ealready exists or failed to publish.", Logger.LogLevel.ERROR);
-                return result == 1L;
-            } catch (Exception e) {
-                Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &cFailed to publish &f" + text + " &cmessage to Redis: &f" + e.getMessage(), Logger.LogLevel.ERROR);
-                this.releaseLock(isLockAcquired, lockKey, lockValue);
+        if (client == null) return false;
+        String lockKey = "lock:" + uuid;
+        String lockValue = UUID.randomUUID().toString();
+        boolean isLockAcquired = false;
+        try (Jedis jedis = client.getResource()) {
+            int lockExpiration = 1000;
+            int uuidExpiration = 15;
+            isLockAcquired = this.acquireLock(lockKey, lockValue, lockExpiration);
+            if (!isLockAcquired) {
+                Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &cFailed to acquire lock for UUID &f" + uuid, Logger.LogLevel.ERROR);
                 return false;
-            } finally {
-                this.releaseLock(isLockAcquired, lockKey, lockValue);
             }
-        }, IsekaiAuctions.getExecutor()).exceptionallyAsync(e->{
-            Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &cUnexpected Redis error: &f" + e.getMessage(), Logger.LogLevel.ERROR);
+            messages.add(text);
+            String lua = """
+                if redis.call('exists', KEYS[1]) == 0 then
+                    redis.call('sadd', KEYS[1], ARGV[1])
+                    redis.call('publish', KEYS[2], ARGV[1])
+                    redis.call('expire', KEYS[1], ARGV[2])
+                    return 1
+                else
+                    return 0
+                end
+                """;
+            Long result = (Long)jedis.eval(lua, List.of(uuid, channel), List.of(text, String.valueOf(uuidExpiration)));
+            if (result == 0L) Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &eUUID &f" + uuid + " &ealready exists or failed to publish.", Logger.LogLevel.ERROR);
+            return result == 1L;
+        } catch (Exception e) {
+            Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &cFailed to publish &f" + text + " &cmessage to Redis: &f" + e.getMessage(), Logger.LogLevel.ERROR);
             return false;
-        }, IsekaiAuctions.getExecutor()).join();
+        } finally {
+            this.releaseLock(isLockAcquired, lockKey, lockValue);
+        }
     }
 
 
     public void shutdown() {
-        connection.close();
-        client.shutdown();
-
-        pubSubConnection.async().unsubscribe(channel).thenRun(() -> {
-            connection.close();
-            pubSubConnection.close();
-            client.shutdown();
-            Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &eRedis shut down clean!", Logger.LogLevel.INFO);
-        });
+        if (thread != null) thread.shutdown();
+        if (client != null) client.close();
+        Logger.sendConsoleMessage("&8[&bIsekaiAuctions&8] &eRedis shut down clean!", Logger.LogLevel.INFO);
     }
 }

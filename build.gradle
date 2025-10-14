@@ -39,11 +39,12 @@ dependencies {
     compileOnly 'org.black_ixx:playerpoints:3.3.0'
 
     // Database
-    implementation 'io.lettuce:lettuce-core:6.8.1.RELEASE'
-    implementation 'org.jdbi:jdbi3-core:3.49.6'
-    implementation 'org.jdbi:jdbi3-sqlobject:3.49.6'
+    implementation 'redis.clients:jedis:6.2.0'
     implementation 'com.zaxxer:HikariCP:7.0.0'
+    compileOnly 'com.h2database:h2:2.4.240'
+    compileOnly 'com.mysql:mysql-connector-j:9.4.0'
     compileOnly 'org.mariadb.jdbc:mariadb-java-client:3.5.4'
+    compileOnly 'org.postgresql:postgresql:42.7.8'
 
     // MC Utils?
     implementation 'net.wesjd:anvilgui:1.10.8-SNAPSHOT'
@@ -57,7 +58,6 @@ dependencies {
     // Utils
     compileOnly 'org.projectlombok:lombok:1.18.42'
     annotationProcessor 'org.projectlombok:lombok:1.18.42'
-
     implementation(fileTree("libs/impl"))
     compileOnly(fileTree("libs/comp")) // Mainly includes CMI version of Vault
 }

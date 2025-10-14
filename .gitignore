@@ -55,3 +55,6 @@ local.properties
 
 # Libraries folder (if used for local dependencies)
 libraries/
+
+# Development notes
+REFACTOR_NOTES.md

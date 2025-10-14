@@ -17,17 +17,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.util.io.BukkitObjectInputStream;
-import org.bukkit.util.io.BukkitObjectOutputStream;
-import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Utils {
+
 
     public static String strip(String text) {
         if (text == null || text.isEmpty())
@@ -87,40 +86,6 @@ public class Utils {
         return hex(s);
     }
 
-    public static String itemToBase64(ItemStack item) {
-        try {
-            if (item == null)
-                return "";
-
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            BukkitObjectOutputStream dataOutput = new BukkitObjectOutputStream(outputStream);
-
-            dataOutput.writeObject(item);
-            dataOutput.close();
-            return Base64Coder.encodeLines(outputStream.toByteArray());
-        } catch (Exception e) {
-            return "";
-        }
-    }
-
-    public static ItemStack itemFromBase64(String data) {
-        try {
-            if (data == null || data.isEmpty())
-                return null;
-
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Coder.decodeLines(data));
-            BukkitObjectInputStream dataInput = new BukkitObjectInputStream(inputStream);
-            Object object = dataInput.readObject();
-            if (!(object instanceof ItemStack))
-                return null;
-
-            dataInput.close();
-            return (ItemStack) object;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     public static String replacePlaceholders(String message, PlaceholderUtil placeholderUtil) {
         if (placeholderUtil == null)
             return message;
@@ -168,18 +133,6 @@ public class Utils {
         }
 
         return false;
-    }
-
-    public static boolean isDisabledWorld(String world) {
-        ConfigurationSection section = IsekaiAuctions.getInstance().configFile.getConfigurationSection("settings.disabled_worlds");
-        if (section == null || !section.getBoolean("enabled"))
-            return false;
-
-        List<String> worlds = section.getStringList("world_list");
-        if (worlds.isEmpty())
-            return false;
-
-        return worlds.contains(world);
     }
 
     public static void playSound(Player player, String type) {
@@ -319,21 +272,15 @@ public class Utils {
     }
 
     public static List<String> getLore(ItemStack item) {
-        if (item == null)
-            return Collections.emptyList();
-
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null)
-            return Collections.emptyList();
-
-        List<String> lore = meta.getLore();
+        if (item == null || !item.hasItemMeta())
+            return List.of();
+        List<String> lore = item.getItemMeta().getLore();
         if (lore == null || lore.isEmpty())
-            return Collections.emptyList();
+            return List.of();
 
         List<String> newLore = new ArrayList<>(lore.size());
         for (String line : lore)
             newLore.add(Utils.colorize(line));
-
         return newLore;
     }
 

@@ -15,10 +15,10 @@ import java.sql.*;
 import java.util.List;
 import java.util.UUID;
 
-public class MySQLDatabase extends Database {
+public class H2Database extends Database {
 
-    public MySQLDatabase(Type type, Config config) {
-        super(type, config);
+    public H2Database() {
+        super(Type.H2, Config.builder().username("sa").password("").maximum_pool_size(10).minimum_idle(3).build());
     }
 
     @Override
@@ -32,9 +32,9 @@ public class MySQLDatabase extends Database {
                 item BLOB NOT NULL,
                 bids TEXT,
                 price DOUBLE NOT NULL,
-                end_time INT(11),
-                type TINYTEXT NOT NULL,
-                claimed BOOLEAN,
+                end_time BIGINT,
+                type VARCHAR(255) NOT NULL,
+                claimed BOOLEAN DEFAULT FALSE,
                 economy TEXT
             )
         """);
@@ -50,16 +50,16 @@ public class MySQLDatabase extends Database {
             stmt.execute("""
             CREATE TABLE IF NOT EXISTS player_stats (
                 uuid VARCHAR(36) PRIMARY KEY,
-                won_auctions INTEGER NOT NULL,
-                lost_auctions INTEGER NOT NULL,
-                total_bids INTEGER NOT NULL,
-                highest_bid DOUBLE NOT NULL,
-                spent_money DOUBLE NOT NULL,
-                created_auctions INTEGER NOT NULL,
-                expired_auctions INTEGER NOT NULL,
-                sold_auctions INTEGER NOT NULL,
-                earned_money DOUBLE NOT NULL,
-                total_fees DOUBLE NOT NULL
+                won_auctions INTEGER NOT NULL DEFAULT 0,
+                lost_auctions INTEGER NOT NULL DEFAULT 0,
+                total_bids INTEGER NOT NULL DEFAULT 0,
+                highest_bid DOUBLE NOT NULL DEFAULT 0.0,
+                spent_money DOUBLE NOT NULL DEFAULT 0.0,
+                created_auctions INTEGER NOT NULL DEFAULT 0,
+                expired_auctions INTEGER NOT NULL DEFAULT 0,
+                sold_auctions INTEGER NOT NULL DEFAULT 0,
+                earned_money DOUBLE NOT NULL DEFAULT 0.0,
+                total_fees DOUBLE NOT NULL DEFAULT 0.0
             )
         """);
 
@@ -210,7 +210,7 @@ public class MySQLDatabase extends Database {
     public void saveAuctions() {
         runTask(() -> {
             try (PreparedStatement statement = getConnection()
-                    .prepareStatement("REPLACE INTO auctions (uuid, owner, display_name, item, bids, price, end_time, type, claimed, economy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+                    .prepareStatement("MERGE INTO auctions (uuid, owner, display_name, item, bids, price, end_time, type, claimed, economy) KEY(uuid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
                 int i = 0;
                 long time = System.currentTimeMillis();
                 for (Auction auction : AuctionCache.getAuctions().values()) {
@@ -266,7 +266,7 @@ public class MySQLDatabase extends Database {
             }
 
             try (PreparedStatement statement = getConnection()
-                    .prepareStatement("REPLACE INTO auctions (uuid, owner, display_name, item, bids, price, end_time, type, claimed, economy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+                    .prepareStatement("MERGE INTO auctions (uuid, owner, display_name, item, bids, price, end_time, type, claimed, economy) KEY(uuid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
                 statement.setString(1, auction.getAuctionUUID().toString());
                 statement.setString(2, auction.getAuctionOwner().toString());
                 statement.setString(3, auction.getAuctionOwnerDisplayName());
@@ -295,7 +295,7 @@ public class MySQLDatabase extends Database {
     @Override
     public void saveItem(UUID uuid, ItemStack item) {
         if (item != null) {
-            String sql = "REPLACE INTO player_items (uuid, create_item) VALUES (?, ?)";
+            String sql = "MERGE INTO player_items (uuid, create_item) KEY(uuid) VALUES (?, ?)";
             runTask(() -> {
                 try (PreparedStatement statement = getConnection().prepareStatement(sql)) {
                     statement.setString(1, uuid.toString());
@@ -316,7 +316,7 @@ public class MySQLDatabase extends Database {
         UUID uuid = stats.getPlayer();
         runTask(() -> {
             try (PreparedStatement statement = getConnection()
-                    .prepareStatement("REPLACE INTO player_stats (uuid, won_auctions, lost_auctions, total_bids, highest_bid, spent_money, created_auctions, expired_auctions, sold_auctions, earned_money, total_fees) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+                    .prepareStatement("MERGE INTO player_stats (uuid, won_auctions, lost_auctions, total_bids, highest_bid, spent_money, created_auctions, expired_auctions, sold_auctions, earned_money, total_fees) KEY(uuid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
                 statement.setString(1, uuid.toString());
                 statement.setInt(2, stats.getWonAuctions());
                 statement.setInt(3, stats.getLostAuctions());

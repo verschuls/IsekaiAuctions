@@ -5,7 +5,6 @@ import dev.rollczi.litecommands.bukkit.LiteBukkitFactory;
 import dev.rollczi.litecommands.luckperms.LuckPermsPermissionResolver;
 import dev.rollczi.litecommands.message.LiteMessages;
 import lombok.Getter;
-import me.verschuls.auctionsapi.cache.AuctionCache;
 import me.verschuls.auctionsapi.cache.CategoryCache;
 import me.verschuls.isekaiauctions.addons.DiscordWebhook;
 import me.verschuls.isekaiauctions.addons.HeadDatabase;
@@ -16,7 +15,7 @@ import me.verschuls.isekaiauctions.addons.mute.BanManager;
 import me.verschuls.isekaiauctions.addons.mute.LiteBans;
 import me.verschuls.isekaiauctions.addons.mute.MuteManager;
 import me.verschuls.isekaiauctions.commands.*;
-import me.verschuls.isekaiauctions.database.DatabaseManager;
+import me.verschuls.isekaiauctions.database.Database;
 import me.verschuls.isekaiauctions.handlers.BlacklistHandler;
 import me.verschuls.isekaiauctions.handlers.DataHandler;
 import me.verschuls.isekaiauctions.handlers.MenuHandler;
@@ -31,7 +30,6 @@ import me.verschuls.isekaiauctions.menus.InputMenu;
 import me.verschuls.isekaiauctions.others.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -61,7 +59,7 @@ public class IsekaiAuctions extends JavaPlugin {
     public Map<String, ItemStack> normalItems = new HashMap<>();
     public Map<String, CustomItem> customItems = new HashMap<>();
 
-    public DatabaseManager databaseManager;
+    public Database databaseManager;
     public MuteManager muteManager;
 
     public NumberFormat numberFormat;
@@ -191,19 +189,19 @@ public class IsekaiAuctions extends JavaPlugin {
             Logger.sendConsoleMessage("Enabled &fPlaceholderAPI %level_color%support!", Logger.LogLevel.INFO);
         }
 
-        if (Bukkit.getPluginManager().isPluginEnabled("BanManager")) {
+        if (Bukkit.getPluginManager().isPluginEnabled("LiteBans") ) {
+            this.muteManager = new LiteBans();
+            Logger.sendConsoleMessage("Enabled &fLiteBans %level_color%support!", Logger.LogLevel.INFO);
+        }
+
+        if (Bukkit.getPluginManager().isPluginEnabled("BanManager") && this.muteManager == null) {
             this.muteManager = new BanManager();
             Logger.sendConsoleMessage("Enabled &fBanManager %level_color%support!", Logger.LogLevel.INFO);
         }
 
-        if (Bukkit.getPluginManager().isPluginEnabled("AdvancedBan")) {
+        if (Bukkit.getPluginManager().isPluginEnabled("AdvancedBan") && this.muteManager == null) {
             this.muteManager = new AdvancedBan();
             Logger.sendConsoleMessage("Enabled &fAdvancedBan %level_color%support!", Logger.LogLevel.INFO);
-        }
-
-        if (Bukkit.getPluginManager().isPluginEnabled("LiteBans")) {
-            this.muteManager = new LiteBans();
-            Logger.sendConsoleMessage("Enabled &fLiteBans %level_color%support!", Logger.LogLevel.INFO);
         }
 
         if (addons.getBoolean("discord.enabled") && !addons.getString("discord.webhook_url", "").isEmpty()) {
@@ -222,5 +220,11 @@ public class IsekaiAuctions extends JavaPlugin {
         reloadConfig();
         this.dataHandler.load();
         CategoryCache.loadCategories();
+
+    }
+
+    public static void disablePlugin() {
+        Logger.sendConsoleMessage("Plugin will be disabled", Logger.LogLevel.ERROR);
+        IsekaiAuctions.getInstance().getServer().getPluginManager().disablePlugin(IsekaiAuctions.getInstance());
     }
 }

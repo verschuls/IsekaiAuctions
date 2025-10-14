@@ -6,7 +6,6 @@ import dev.rollczi.litecommands.annotations.context.Context;
 import dev.rollczi.litecommands.annotations.cooldown.Cooldown;
 import dev.rollczi.litecommands.annotations.execute.Execute;
 import dev.rollczi.litecommands.annotations.permission.Permission;
-import eu.decentsoftware.holograms.api.utils.scheduler.S;
 import me.verschuls.auctionsapi.AuctionHook;
 import me.verschuls.auctionsapi.cache.AuctionCache;
 import me.verschuls.auctionsapi.cache.CategoryCache;
@@ -23,14 +22,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.checkerframework.checker.units.qual.A;
 
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.UUID;
 
 @Command(name = "auction", aliases = {"ah", "auc"})
 @Cooldown(key = "auctions-cooldown", count = 30L, unit = ChronoUnit.SECONDS, bypass = "isekaiauctions.bypass.cooldown")

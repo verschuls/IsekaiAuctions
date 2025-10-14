@@ -4,7 +4,6 @@ import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Context;
 import dev.rollczi.litecommands.annotations.execute.Execute;
 import dev.rollczi.litecommands.annotations.permission.Permission;
-import eu.decentsoftware.holograms.api.utils.scheduler.S;
 import me.verschuls.isekaiauctions.IsekaiAuctions;
 import me.verschuls.isekaiauctions.others.Utils;
 import org.bukkit.command.CommandSender;
@@ -27,7 +26,7 @@ public class IsekaiAuctionsCommand {
         status.add("&6| &eAuthors: &6"+IsekaiAuctions.getInstance().getPluginMeta().getAuthors().toString().replace("[", "").replace("]", ""));
         status.add("&6| &eGitHub: &6https://github.com/verschuls/IsekaiAuctions");
         status.add("&6| &eVersion: &6"+IsekaiAuctions.getInstance().getPluginMeta().getVersion());
-        status.add("&6| &eDatabase&6[&f"+IsekaiAuctions.getInstance().databaseManager.type()+"&6]&e: "+(IsekaiAuctions.getInstance().databaseManager.status() ? "&a" : "&c")+"Operational");
+        status.add("&6| &eDatabase&6[&f"+IsekaiAuctions.getInstance().databaseManager.getType()+"&6]&e: "+(IsekaiAuctions.getInstance().databaseManager.status() ? "&a" : "&c")+"Operational");
         status.add("&6| &eMain Commands: &6/ah /ahadmin");
         for (String msg : status)
             sender.sendMessage(Utils.colorize(msg));

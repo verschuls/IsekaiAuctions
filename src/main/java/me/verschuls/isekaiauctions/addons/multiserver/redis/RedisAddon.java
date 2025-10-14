@@ -2,15 +2,17 @@ package me.verschuls.isekaiauctions.addons.multiserver.redis;
 
 import me.verschuls.isekaiauctions.IsekaiAuctions;
 import me.verschuls.isekaiauctions.addons.multiserver.MultiServerManager;
+import me.verschuls.isekaiauctions.others.Logger;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class RedisAddon implements MultiServerManager {
 
     private final RedisManager manager;
 
     public RedisAddon() {
-        this.manager = new RedisManager();
+        manager = RedisManager.get();
     }
 
     private void publish(String text) {
@@ -18,17 +20,17 @@ public class RedisAddon implements MultiServerManager {
         try {
             manager.publish(text);
         } catch (Exception e) {
-            e.printStackTrace(System.console().writer());
+            Logger.logError(e);
         }
     }
 
     private boolean publish(UUID uuid, String text) {
         IsekaiAuctions.getInstance().dataHandler.debug("SENT Redis Message: &f" + text + " &8(%level_color%Multi Server&8)");
-        try {
-            return manager.publish(String.valueOf(uuid), text);
-        } catch (Exception e) {
+        return CompletableFuture.supplyAsync(()-> manager.publish(String.valueOf(uuid), text),
+                IsekaiAuctions.getExecutor()).exceptionallyAsync((e)->{
+            Logger.logError(e);
             return false;
-        }
+        }, IsekaiAuctions.getExecutor()).join();
     }
 
     @Override
@@ -76,6 +78,7 @@ public class RedisAddon implements MultiServerManager {
         try {
             return manager.isAuctionMessagePublished(String.valueOf(uuid));
         } catch (Exception e) {
+            Logger.logError(e);
             return true;
         }
     }
@@ -85,8 +88,7 @@ public class RedisAddon implements MultiServerManager {
         try {
             manager.removeAuctionMessage(uuid, text);
         } catch (Exception e) {
-            e.printStackTrace(System.console().writer());
-
+            Logger.logError(e);
         }
     }
 

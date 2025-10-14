@@ -5,7 +5,6 @@ import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Context;
 import dev.rollczi.litecommands.annotations.execute.Execute;
 import dev.rollczi.litecommands.annotations.permission.Permission;
-import eu.decentsoftware.holograms.api.utils.scheduler.S;
 import me.verschuls.auctionsapi.AuctionHook;
 import me.verschuls.auctionsapi.cache.AuctionCache;
 import me.verschuls.isekaiauctions.IsekaiAuctions;
@@ -20,7 +19,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Optional;
+import java.util.UUID;
 
 @Command(name = "auctionadmin", aliases = {"ahadmin", "aucadmin"})
 @Permission(value = "isekaiauctions.commands.admin.*")
