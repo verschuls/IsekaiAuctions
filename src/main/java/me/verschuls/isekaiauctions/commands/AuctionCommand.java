@@ -105,7 +105,7 @@ public class AuctionCommand {
 
             Player target = Bukkit.getPlayer(uuid);
             if (target == null) {
-                //sendhelp
+                sendHelp(player);
                 return;
             }
 
@@ -122,7 +122,7 @@ public class AuctionCommand {
 
     @Execute(name = "sell")
     @Permission(value = "isekaiauctions.commands.sell")
-    void sell(@Context Player player, @Arg String price_, @Arg Optional<String> duration, @Arg Optional<String> type_) {
+    void sell(@Context Player player, @Arg(value = "price") String price_, @Arg(value = "duration") Optional<String> duration, @Arg(value = "bin/normal") Optional<String> type_) {
         PlaceholderUtil placeholderUtil = new PlaceholderUtil().addPlaceholder("%command_name%", "ah");
         int slot = player.getInventory().getHeldItemSlot();
         ItemStack item = slot >= 0 ? player.getInventory().getItem(slot) : null;

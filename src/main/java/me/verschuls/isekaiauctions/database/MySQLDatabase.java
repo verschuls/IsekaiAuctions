@@ -98,7 +98,8 @@ public class MySQLDatabase extends Database {
     @Override
     public void loadAuction(UUID uuid) {
         runTask(() -> {
-            try (PreparedStatement statement = getConnection().prepareStatement("SELECT * FROM auctions WHERE uuid = ?")) {
+            try (Connection con = getConnection();
+                 PreparedStatement statement = con.prepareStatement("SELECT * FROM auctions WHERE uuid = ?")) {
                 statement.setString(1, uuid.toString());
 
                 ResultSet set = statement.executeQuery();
@@ -113,7 +114,8 @@ public class MySQLDatabase extends Database {
     @Override
     public void loadItem(UUID uuid) {
         runTask(() -> {
-            try (PreparedStatement itemsStatement = getConnection().prepareStatement("SELECT * FROM player_items WHERE uuid = ?")) {
+            try (Connection con = getConnection();
+                 PreparedStatement itemsStatement = con.prepareStatement("SELECT * FROM player_items WHERE uuid = ?")) {
                 itemsStatement.setString(1, uuid.toString());
                 ResultSet item = itemsStatement.executeQuery();
 
@@ -136,7 +138,8 @@ public class MySQLDatabase extends Database {
     @Override
     public boolean loadAuctions() {
         runTask(() -> {
-            try (PreparedStatement statement = getConnection().prepareStatement("SELECT * FROM auctions")) {
+            try (Connection con = getConnection();
+                 PreparedStatement statement = con.prepareStatement("SELECT * FROM auctions")) {
                 ResultSet set = statement.executeQuery();
 
                 long time = System.currentTimeMillis();
@@ -170,7 +173,8 @@ public class MySQLDatabase extends Database {
     @Override
     public void loadStat(UUID uuid) {
         runTask(() -> {
-            try (PreparedStatement statsStatement = getConnection().prepareStatement("SELECT * FROM player_stats WHERE uuid = ?")) {
+            try (Connection con = getConnection();
+                 PreparedStatement statsStatement = con.prepareStatement("SELECT * FROM player_stats WHERE uuid = ?")) {
                 statsStatement.setString(1, uuid.toString());
                 ResultSet stat = statsStatement.executeQuery();
 
@@ -209,7 +213,8 @@ public class MySQLDatabase extends Database {
     @Override
     public void saveAuctions() {
         runTask(() -> {
-            try (PreparedStatement statement = getConnection()
+            try (Connection con = getConnection();
+                    PreparedStatement statement = con
                     .prepareStatement("REPLACE INTO auctions (uuid, owner, display_name, item, bids, price, end_time, type, claimed, economy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
                 int i = 0;
                 long time = System.currentTimeMillis();
@@ -265,7 +270,8 @@ public class MySQLDatabase extends Database {
                 playerBids.delete(0, 2);
             }
 
-            try (PreparedStatement statement = getConnection()
+            try (Connection con = getConnection();
+                    PreparedStatement statement = con
                     .prepareStatement("REPLACE INTO auctions (uuid, owner, display_name, item, bids, price, end_time, type, claimed, economy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
                 statement.setString(1, auction.getAuctionUUID().toString());
                 statement.setString(2, auction.getAuctionOwner().toString());
@@ -297,7 +303,8 @@ public class MySQLDatabase extends Database {
         if (item != null) {
             String sql = "REPLACE INTO player_items (uuid, create_item) VALUES (?, ?)";
             runTask(() -> {
-                try (PreparedStatement statement = getConnection().prepareStatement(sql)) {
+                try (Connection con = getConnection();
+                        PreparedStatement statement = con.prepareStatement(sql)) {
                     statement.setString(1, uuid.toString());
                     statement.setBytes(2, item.serializeAsBytes());
 
@@ -315,7 +322,8 @@ public class MySQLDatabase extends Database {
     public void saveStats(PlayerStats stats) {
         UUID uuid = stats.getPlayer();
         runTask(() -> {
-            try (PreparedStatement statement = getConnection()
+            try (Connection con = getConnection();
+                    PreparedStatement statement = con
                     .prepareStatement("REPLACE INTO player_stats (uuid, won_auctions, lost_auctions, total_bids, highest_bid, spent_money, created_auctions, expired_auctions, sold_auctions, earned_money, total_fees) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
                 statement.setString(1, uuid.toString());
                 statement.setInt(2, stats.getWonAuctions());
